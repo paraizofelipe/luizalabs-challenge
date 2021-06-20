@@ -1,0 +1,13 @@
+linters:
+  enable:
+    - goimports
+    - misspell
+    - unparam
+    - dogsled
+    - gofmt
+    - revive
+    - gocyclo
+    - gocognit
+    - gosec
+    - unconvert
+    - gocritic
