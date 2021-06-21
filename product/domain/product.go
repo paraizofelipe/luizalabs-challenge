@@ -8,7 +8,7 @@ import (
 )
 
 type Product struct {
-	Id          uuid.UUID `json:"id" db:"id"`
+	ID          uuid.UUID `json:"id" db:"id"`
 	Title       string    `json:"title" db:"title"`
 	Image       string    `json:"image" db:"image"`
 	Price       float64   `json:"price" db:"price"`

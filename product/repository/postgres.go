@@ -110,7 +110,7 @@ func (r repository) Update(product domain.Product) (err error) {
 		product.Brand,
 		product.ReviewScore,
 		time.Now().UTC(),
-		product.Id,
+		product.ID,
 	)
 }
 
