@@ -9,7 +9,7 @@ import (
 )
 
 type Buyer struct {
-	Id               uuid.UUID        `json:"id" db:"id"`
+	ID               uuid.UUID        `json:"id" db:"id"`
 	Name             string           `json:"name" db:"name"`
 	Email            string           `json:"email" db:"email"`
 	FavoriteProducts []domain.Product `json:"favorite_products" db:"favorite_products"`
