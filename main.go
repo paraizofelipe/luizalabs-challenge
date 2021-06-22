@@ -26,7 +26,7 @@ func main() {
 	productHandler := product.NewHandler(storage, logger)
 
 	http.HandleFunc("/api/buyer/", buyerHandler.Router)
-	http.HandleFunc("/api/produdct/", productHandler.Router)
+	http.HandleFunc("/api/product/", productHandler.Router)
 
 	url := fmt.Sprintf("%s:%s", config.Host, os.Getenv("PORT"))
 
