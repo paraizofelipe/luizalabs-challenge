@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -22,38 +23,61 @@ func NewPostgreRepository(db *sqlx.DB) BuyerRepository {
 func (r repository) FindAll() (listBuyer []domain.Buyer, err error) {
 	statement := `
 			SELECT
-					id,
-					name,
-					email,
-					created_at,
-					updated_at
+				id,
+				name,
+				email,
+				created_at,
+				updated_at
 			FROM
-					buyers;
+				buyers;
 	`
 	err = r.storage.Find(statement, &listBuyer, nil)
+	return
+}
+
+func (r repository) FindByID(id string) (buyer domain.Buyer, err error) {
+	statement := `
+			SELECT
+				id,
+				name,
+				email,
+				created_at,
+				updated_at
+			FROM
+				buyers
+			WHERE
+				id = $1;
+	`
+	err = r.storage.Find(statement, &buyer, id)
+	if err == sql.ErrNoRows {
+		err = nil
+	}
 	return
 }
 
 func (r repository) FindByEmail(email string) (buyer domain.Buyer, err error) {
 	statement := `
 			SELECT
-					id,
-					name,
-					email,
-					created_at,
-					updated_at
+				id,
+				name,
+				email,
+				created_at,
+				updated_at
 			FROM
-					buyers
+				buyers
 			WHERE
-					email = $1;
+				email = $1;
 	`
-	err = r.storage.Find(statement, &buyer, nil)
+	err = r.storage.Find(statement, &buyer, email)
+	if err == sql.ErrNoRows {
+		err = nil
+	}
 	return
 }
 
 func (r repository) Add(buyer domain.Buyer) (err error) {
 	statement := `
-			INSERT INTO buyer (
+			INSERT INTO buyers (
 				id,
 				name,
 				email,
@@ -77,26 +101,49 @@ func (r repository) Add(buyer domain.Buyer) (err error) {
 	return
 }
 
+func (r repository) AddFavoriteProduct(id string, productID string) (err error) {
+	statement := `
+			INSERT INTO product_to_buyer (
+				buyer_id
+				product_id,
+				created_at,
+				updated_at
+			) VALUES (
+				$1,
+				$2,
+				$3,
+				$4
+			);
+	`
+	err = r.storage.Exec(statement,
+		id,
+		productID,
+		time.Now().UTC(),
+		time.Now().UTC(),
+	)
+	return
+}
+
 func (r repository) Update(buyer domain.Buyer) (err error) {
 	statement := `
-                UPDATE
-                        buyer
-                SET
-                        name = $1,
-                        email = $2,
-                        updated_at = $3
-                WHERE
-                        email = $4
-        `
+			UPDATE
+				buyers
+			SET
+				name = $1,
+				email = $2,
+				updated_at = $3
+			WHERE
+				id = $4
+	`
 	return r.storage.Exec(
 		statement,
 		buyer.Name,
 		buyer.Email,
 		time.Now().UTC(),
-		buyer.Email,
+		buyer.ID,
 	)
 }
 
-func (r repository) RemoveByEmail(email string) (err error) {
-	return r.storage.Exec(`DELETE FROM buyer WHERE email = $1`, email)
+func (r repository) RemoveByID(id string) (err error) {
+	return r.storage.Exec(`DELETE FROM buyers WHERE id = $1`, id)
 }

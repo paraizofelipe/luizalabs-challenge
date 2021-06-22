@@ -24,14 +24,22 @@ func (s BuyerService) FindByEmail(email string) (buyer domain.Buyer, err error) 
 	return s.repository.FindByEmail(email)
 }
 
+func (s BuyerService) FindByID(id string) (buyer domain.Buyer, err error) {
+	return s.repository.FindByID(id)
+}
+
 func (s BuyerService) Add(buyer domain.Buyer) (err error) {
 	return s.repository.Add(buyer)
+}
+
+func (s BuyerService) AddFavoriteProduct(id string, productID string) (err error) {
+	return s.repository.AddFavoriteProduct(id, productID)
 }
 
 func (s BuyerService) Update(buyer domain.Buyer) (err error) {
 	return s.repository.Update(buyer)
 }
 
-func (s BuyerService) RemoveByEmail(email string) (err error) {
-	return s.repository.RemoveByEmail(email)
+func (s BuyerService) RemoveByID(email string) (err error) {
+	return s.repository.RemoveByID(email)
 }
