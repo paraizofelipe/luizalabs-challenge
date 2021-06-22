@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,7 +20,7 @@ func NewPostgreRepository(db *sqlx.DB) ProductRepository {
 	}
 }
 
-func (r repository) FindAll() (listProduct []domain.Product, err error) {
+func (r repository) ListByPage(page int) (listProduct []domain.Product, err error) {
 	statement := `
 			SELECT
 					id,
@@ -31,9 +32,12 @@ func (r repository) FindAll() (listProduct []domain.Product, err error) {
 					created_at,
 					updated_at
 			FROM
-					products;
+					products
+			ORDER BY title
+			OFFSET $1
+			LIMIT 20;
 	`
-	err = r.storage.Find(statement, &listProduct, nil)
+	err = r.storage.FindAll(statement, &listProduct, page)
 	return
 }
 
@@ -53,13 +57,38 @@ func (r repository) FindByID(id string) (product domain.Product, err error) {
 			WHERE
 					id = $1;
 	`
-	err = r.storage.Find(statement, &product, nil)
+	err = r.storage.Find(statement, &product, id)
+	return
+}
+
+func (r repository) FindByTitleAndBrand(brand string, title string) (product domain.Product, err error) {
+	statement := `
+			SELECT
+					id,
+					title,
+					image,
+					price,
+					brand,
+					review_score,
+					created_at,
+					updated_at
+			FROM
+					products
+			WHERE
+					brand = $1
+					AND
+					title = $2;
+	`
+	err = r.storage.Find(statement, &product, brand, title)
+	if err == sql.ErrNoRows {
+		err = nil
+	}
 	return
 }
 
 func (r repository) Add(product domain.Product) (err error) {
 	statement := `
-			INSERT INTO product (
+			INSERT INTO products (
 				id,
 				title,
 				image,
@@ -73,7 +102,10 @@ func (r repository) Add(product domain.Product) (err error) {
 				$2,
 				$3,
 				$4,
-				$5
+				$5,
+				$6,
+				$7,
+				$8
 			);
 	`
 	err = r.storage.Exec(statement,
@@ -92,15 +124,16 @@ func (r repository) Add(product domain.Product) (err error) {
 func (r repository) Update(product domain.Product) (err error) {
 	statement := `
 			UPDATE
-				product
+				products
 			SET
 				title = $1,
 				image = $2,
 				price = $3,
 				brand = $4,
 				review_score = $5,
+				updated_at = $6
 			WHERE
-				id = $6
+				id = $7
         `
 	return r.storage.Exec(
 		statement,
@@ -115,5 +148,5 @@ func (r repository) Update(product domain.Product) (err error) {
 }
 
 func (r repository) RemoveByID(id string) (err error) {
-	return r.storage.Exec(`DELETE FROM product WHERE email = $1`, id)
+	return r.storage.Exec(`DELETE FROM products WHERE id = $1`, id)
 }

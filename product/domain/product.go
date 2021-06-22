@@ -13,7 +13,7 @@ type Product struct {
 	Image       string    `json:"image" db:"image"`
 	Price       float64   `json:"price" db:"price"`
 	Brand       string    `json:"brand" db:"brand"`
-	ReviewScore int       `json:"review_score" db:"review_score"`
+	ReviewScore float64   `json:"review_score" db:"review_score"`
 	CreatedAt   time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
 }
