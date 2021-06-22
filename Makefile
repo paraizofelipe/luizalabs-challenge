@@ -13,8 +13,8 @@ linter:
 lint:
 	golangci-lint run ./...
 
-start:
-	FILE=storage/input-route.csv DEBUG=true HOST=0.0.0.0 PORT=3000 go run api/main.go
+start: build
+	go run main.go
 
 test:
 	go test ./... -covermode=count -count 1 -v
@@ -25,4 +25,5 @@ dk-start:
 dk-build: build
 	docker build -t luizalabs:latest .
 
-dk-deploy: dk-build dk-start
+dk-deploy:
+	docker-compose up -d --build
