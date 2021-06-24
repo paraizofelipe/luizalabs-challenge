@@ -13,7 +13,7 @@ import (
 	"github.com/paraizofelipe/luizalabs-challenge/router"
 )
 
-func TestDetail(t *testing.T) {
+func TestHandlerBuyerDetail(t *testing.T) {
 	var logger = log.New(&bytes.Buffer{}, "", log.Lshortfile)
 
 	tests := []struct {
@@ -21,6 +21,7 @@ func TestDetail(t *testing.T) {
 		requestID          string
 		setupMock          func(string) *service.MockService
 		expectedStatusCode int
+		authorization      bool
 	}{
 		{
 			description: "simple test",
@@ -31,6 +32,7 @@ func TestDetail(t *testing.T) {
 				service.EXPECT().FindByID(id).Return(domain.Buyer{}, nil).AnyTimes()
 				return service
 			},
+			authorization:      true,
 			expectedStatusCode: 200,
 		},
 
@@ -40,6 +42,7 @@ func TestDetail(t *testing.T) {
 			setupMock: func(id string) *service.MockService {
 				return &service.MockService{}
 			},
+			authorization:      true,
 			expectedStatusCode: 500,
 		},
 
@@ -52,7 +55,21 @@ func TestDetail(t *testing.T) {
 				service.EXPECT().FindByID(id).Return(domain.Buyer{}, errors.New("")).AnyTimes()
 				return service
 			},
+			authorization:      true,
 			expectedStatusCode: 500,
+		},
+
+		{
+			description: "error not authorization",
+			requestID:   "e190a597-e7a3-4672-8a08-da3825e87244",
+			setupMock: func(id string) *service.MockService {
+				ctrl := gomock.NewController(t)
+				service := service.NewMockService(ctrl)
+				service.EXPECT().FindByID(id).Return(domain.Buyer{}, errors.New("")).AnyTimes()
+				return service
+			},
+			authorization:      false,
+			expectedStatusCode: 403,
 		},
 	}
 
@@ -69,6 +86,9 @@ func TestDetail(t *testing.T) {
 			}
 
 			ctx := router.Context{
+				Authorization: router.Authorization{
+					Read: test.authorization,
+				},
 				ResponseWriter: w,
 				Params: map[string]string{
 					"id": test.requestID,
@@ -85,7 +105,7 @@ func TestDetail(t *testing.T) {
 	}
 }
 
-func TestCreate(t *testing.T) {
+func TestHandlerBuyerCreate(t *testing.T) {
 	var logger = log.New(&bytes.Buffer{}, "", log.LstdFlags|log.Lshortfile)
 
 	tests := []struct {
@@ -93,6 +113,7 @@ func TestCreate(t *testing.T) {
 		setupMock          func() *service.MockService
 		requestBody        string
 		expectedStatusCode int
+		authorization      bool
 	}{
 		{
 			description: "simple test",
@@ -106,6 +127,7 @@ func TestCreate(t *testing.T) {
 				"name":  "Fulano",
 				"email": "fulano@gmail.com"
 			}`,
+			authorization:      true,
 			expectedStatusCode: 201,
 		},
 		{
@@ -116,6 +138,7 @@ func TestCreate(t *testing.T) {
 				service.EXPECT().Add(gomock.Any()).Return(errors.New("")).AnyTimes()
 				return service
 			},
+			authorization:      true,
 			expectedStatusCode: 400,
 		},
 		{
@@ -130,7 +153,23 @@ func TestCreate(t *testing.T) {
 				"name":  "Fulano",
 				"email": "fulano@gmail.com"
 			}`,
+			authorization:      true,
 			expectedStatusCode: 500,
+		},
+		{
+			description: "error not authorization",
+			setupMock: func() *service.MockService {
+				ctrl := gomock.NewController(t)
+				service := service.NewMockService(ctrl)
+				service.EXPECT().Add(gomock.Any()).Return(errors.New("")).AnyTimes()
+				return service
+			},
+			requestBody: `{
+				"name":  "Fulano",
+				"email": "fulano@gmail.com"
+			}`,
+			authorization:      false,
+			expectedStatusCode: 403,
 		},
 	}
 
@@ -149,6 +188,9 @@ func TestCreate(t *testing.T) {
 			}
 
 			ctx := router.Context{
+				Authorization: router.Authorization{
+					Write: test.authorization,
+				},
 				ResponseWriter: w,
 				Request:        req,
 			}
@@ -163,7 +205,7 @@ func TestCreate(t *testing.T) {
 	}
 }
 
-func TestRemove(t *testing.T) {
+func TestHandlerBuyerRemove(t *testing.T) {
 	var logger = log.New(&bytes.Buffer{}, "", log.LstdFlags|log.Lshortfile)
 
 	tests := []struct {
@@ -171,6 +213,7 @@ func TestRemove(t *testing.T) {
 		setupMock          func(string) *service.MockService
 		requestID          string
 		expectedStatusCode int
+		authorization      bool
 	}{
 		{
 			description: "simple test",
@@ -181,6 +224,7 @@ func TestRemove(t *testing.T) {
 				service.EXPECT().RemoveByID(id).Return(nil).AnyTimes()
 				return service
 			},
+			authorization:      true,
 			expectedStatusCode: 200,
 		},
 		{
@@ -192,7 +236,17 @@ func TestRemove(t *testing.T) {
 				service.EXPECT().RemoveByID(id).Return(errors.New("")).AnyTimes()
 				return service
 			},
+			authorization:      true,
 			expectedStatusCode: 400,
+		},
+		{
+			description: "error not authorization",
+			requestID:   "000000000",
+			setupMock: func(id string) *service.MockService {
+				return nil
+			},
+			authorization:      false,
+			expectedStatusCode: 403,
 		},
 	}
 
@@ -209,6 +263,9 @@ func TestRemove(t *testing.T) {
 			}
 
 			ctx := router.Context{
+				Authorization: router.Authorization{
+					Write: test.authorization,
+				},
 				ResponseWriter: w,
 				Params:         map[string]string{"id": test.requestID},
 			}
@@ -223,7 +280,7 @@ func TestRemove(t *testing.T) {
 	}
 }
 
-func TestUpdate(t *testing.T) {
+func TestHandlerBuyerUpdate(t *testing.T) {
 	var logger = log.New(&bytes.Buffer{}, "", log.LstdFlags|log.Lshortfile)
 
 	tests := []struct {
@@ -232,6 +289,7 @@ func TestUpdate(t *testing.T) {
 		requestID          string
 		requestBody        string
 		expectedStatusCode int
+		authorization      bool
 	}{
 		{
 			description: "Simple test",
@@ -246,6 +304,7 @@ func TestUpdate(t *testing.T) {
 				"name": "fulano",
 				"email": "fulano@gmail.com"
 			}`,
+			authorization:      true,
 			expectedStatusCode: 200,
 		},
 		{
@@ -261,6 +320,7 @@ func TestUpdate(t *testing.T) {
 				"name": "fulano",
 				"email": "fulano@gmail.com"
 			}`,
+			authorization:      true,
 			expectedStatusCode: 500,
 		},
 		{
@@ -271,6 +331,7 @@ func TestUpdate(t *testing.T) {
 				service.EXPECT().Update(gomock.Any()).Return(errors.New("")).AnyTimes()
 				return service
 			},
+			authorization:      true,
 			expectedStatusCode: 400,
 		},
 		{
@@ -286,7 +347,17 @@ func TestUpdate(t *testing.T) {
 				"name": "fulano",
 				"email": "fulano@gmail.com"
 			}`,
+			authorization:      true,
 			expectedStatusCode: 400,
+		},
+		{
+			description: "error not authorization",
+			setupMock: func() *service.MockService {
+				return nil
+			},
+			requestID:          "00000000",
+			authorization:      false,
+			expectedStatusCode: 403,
 		},
 	}
 
@@ -305,6 +376,9 @@ func TestUpdate(t *testing.T) {
 			}
 
 			ctx := router.Context{
+				Authorization: router.Authorization{
+					Write: test.authorization,
+				},
 				ResponseWriter: w,
 				Params:         map[string]string{"id": test.requestID},
 				Request:        req,
@@ -320,7 +394,7 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
-func TestAddFavoriteProduct(t *testing.T) {
+func TestHandlerBuyerAddFavoriteProduct(t *testing.T) {
 	var logger = log.New(&bytes.Buffer{}, "", log.LstdFlags|log.Lshortfile)
 
 	tests := []struct {
@@ -328,10 +402,11 @@ func TestAddFavoriteProduct(t *testing.T) {
 		setupMock          func() *service.MockService
 		requestBuyerID     string
 		requestProductID   string
+		authorization      bool
 		expectedStatusCode int
 	}{
 		{
-			description: "Simple test",
+			description: "simple test",
 			setupMock: func() *service.MockService {
 				ctrl := gomock.NewController(t)
 				service := service.NewMockService(ctrl)
@@ -340,10 +415,11 @@ func TestAddFavoriteProduct(t *testing.T) {
 			},
 			requestBuyerID:     "e190a597-e7a3-4672-8a08-da3825e87244",
 			requestProductID:   "7c40ba69-5d12-458a-aa99-8ef4bfaf8180",
+			authorization:      true,
 			expectedStatusCode: 200,
 		},
 		{
-			description: "Should return error when updating the buyer",
+			description: "error when updating the buyer",
 			setupMock: func() *service.MockService {
 				ctrl := gomock.NewController(t)
 				service := service.NewMockService(ctrl)
@@ -352,10 +428,11 @@ func TestAddFavoriteProduct(t *testing.T) {
 			},
 			requestBuyerID:     "e190a597-e7a3-4672-8a08-da3825e87244",
 			requestProductID:   "7c40ba69-5d12-458a-aa99-8ef4bfaf8180",
+			authorization:      true,
 			expectedStatusCode: 500,
 		},
 		{
-			description: "Should return error invalid buyer ID",
+			description: "error invalid buyer ID",
 			setupMock: func() *service.MockService {
 				ctrl := gomock.NewController(t)
 				service := service.NewMockService(ctrl)
@@ -364,10 +441,11 @@ func TestAddFavoriteProduct(t *testing.T) {
 			},
 			requestBuyerID:     "",
 			requestProductID:   "e190a597-e7a3-4672-8a08-da3825e87244",
+			authorization:      true,
 			expectedStatusCode: 500,
 		},
 		{
-			description: "Should return error invalid product ID",
+			description: "error invalid product ID",
 			setupMock: func() *service.MockService {
 				ctrl := gomock.NewController(t)
 				service := service.NewMockService(ctrl)
@@ -376,7 +454,18 @@ func TestAddFavoriteProduct(t *testing.T) {
 			},
 			requestBuyerID:     "e190a597-e7a3-4672-8a08-da3825e87244",
 			requestProductID:   "",
+			authorization:      true,
 			expectedStatusCode: 500,
+		},
+		{
+			description: "error not authorization",
+			setupMock: func() *service.MockService {
+				return nil
+			},
+			requestBuyerID:     "e190a597-e7a3-4672-8a08-da3825e87244",
+			requestProductID:   "",
+			authorization:      false,
+			expectedStatusCode: 403,
 		},
 	}
 
@@ -394,6 +483,9 @@ func TestAddFavoriteProduct(t *testing.T) {
 
 			ctx := router.Context{
 				ResponseWriter: w,
+				Authorization: router.Authorization{
+					Write: test.authorization,
+				},
 				Params: map[string]string{
 					"id":         test.requestBuyerID,
 					"id_product": test.requestProductID,

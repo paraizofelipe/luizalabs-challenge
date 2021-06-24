@@ -10,6 +10,7 @@ import (
 	"github.com/paraizofelipe/luizalabs-challenge/buyer/domain"
 	"github.com/paraizofelipe/luizalabs-challenge/buyer/service"
 	"github.com/paraizofelipe/luizalabs-challenge/router"
+	"github.com/paraizofelipe/luizalabs-challenge/router/middleware"
 )
 
 type Buyer struct {
@@ -29,6 +30,11 @@ func (h Buyer) create(ctx *router.Context) {
 		err   error
 		buyer domain.Buyer
 	)
+
+	if !ctx.Authorization.Write {
+		ctx.Text(http.StatusForbidden, "Not authorization!")
+		return
+	}
 
 	if err = json.NewDecoder(ctx.Body).Decode(&buyer); err != nil {
 		h.Logger.Println(err)
@@ -51,6 +57,11 @@ func (h Buyer) remove(ctx *router.Context) {
 		id  string = ctx.Params["id"]
 	)
 
+	if !ctx.Authorization.Write {
+		ctx.Text(http.StatusForbidden, "Not authorization!")
+		return
+	}
+
 	if err = h.Service.RemoveByID(id); err != nil {
 		h.Logger.Println(err)
 		ctx.Text(http.StatusBadRequest, "Error when removing the buyer!")
@@ -66,6 +77,11 @@ func (h Buyer) update(ctx *router.Context) {
 		id    string = ctx.Params["id"]
 		buyer domain.Buyer
 	)
+
+	if !ctx.Authorization.Write {
+		ctx.Text(http.StatusForbidden, "Not authorization!")
+		return
+	}
 
 	if err = json.NewDecoder(ctx.Body).Decode(&buyer); err != nil {
 		h.Logger.Println(err)
@@ -93,6 +109,11 @@ func (h Buyer) detail(ctx *router.Context) {
 		buyer domain.Buyer
 	)
 
+	if !ctx.Authorization.Read {
+		ctx.Text(http.StatusForbidden, "Not authorization!")
+		return
+	}
+
 	if _, err = uuid.Parse(id); err != nil {
 		h.Logger.Println(err)
 		ctx.Text(http.StatusInternalServerError, "Invalid ID!")
@@ -112,6 +133,11 @@ func (h Buyer) addFavoriteProduct(ctx *router.Context) {
 		id        string = ctx.Params["id"]
 		productID string = ctx.Params["id_product"]
 	)
+
+	if !ctx.Authorization.Write {
+		ctx.Text(http.StatusForbidden, "Not authorization!")
+		return
+	}
 
 	if _, err = uuid.Parse(id); err != nil {
 		h.Logger.Println(err)
@@ -133,11 +159,11 @@ func (h Buyer) addFavoriteProduct(ctx *router.Context) {
 func (h Buyer) Router(w http.ResponseWriter, r *http.Request) {
 	router := router.NewRouter(h.Logger)
 
-	router.AddRoute(`buyer/(?P<id>[\w|-]+)/?`, http.MethodGet, h.detail)
-	router.AddRoute(`buyer/(?P<id>[\w|-]+)/?`, http.MethodDelete, h.remove)
-	router.AddRoute(`buyer/(?P<id>[\w|-]+)/?`, http.MethodPatch, h.update)
-	router.AddRoute(`buyer/(?P<id>[\w|-]+)/product/(?P<id_product>[\w|-]+)?`, http.MethodPost, h.addFavoriteProduct)
-	router.AddRoute(`buyer/?`, http.MethodPost, h.create)
+	router.AddRoute(`buyer/(?P<id>[\w|-]+)/?`, http.MethodGet, h.detail, middleware.BasicAuth)
+	router.AddRoute(`buyer/(?P<id>[\w|-]+)/?`, http.MethodDelete, h.remove, middleware.BasicAuth)
+	router.AddRoute(`buyer/(?P<id>[\w|-]+)/?`, http.MethodPatch, h.update, middleware.BasicAuth)
+	router.AddRoute(`buyer/(?P<id>[\w|-]+)/product/(?P<id_product>[\w|-]+)?`, http.MethodPost, h.addFavoriteProduct, middleware.BasicAuth)
+	router.AddRoute(`buyer/?`, http.MethodPost, h.create, middleware.BasicAuth)
 
 	router.ServeHTTP(w, r)
 }
