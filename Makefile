@@ -24,7 +24,7 @@ start: build
 	go run main.go
 
 test:
-	go test ./... -covermode=count -count 1 -v
+	go test ./... -covermode=count -count 1
 
 dk-start:
 	docker run -p 3000:3000 luizalabs:latest
