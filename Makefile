@@ -13,6 +13,13 @@ linter:
 lint:
 	golangci-lint run ./...
 
+mockgen:
+	@go get github.com/golang/mock/mockgen@v1.5.0
+	mockgen -source ./buyer/repository/repository.go -destination ./buyer/repository/repository_mock.go -package repository
+	mockgen -source ./product/repository/repository.go -destination ./product/repository/repository_mock.go -package repository
+	mockgen -source ./buyer/service/service.go -destination ./buyer/service/service_mock.go -package service
+	mockgen -source ./product/service/service.go -destination ./product/service/service_mock.go -package service
+
 start: build
 	go run main.go
 
