@@ -16,7 +16,7 @@ import (
 	"github.com/paraizofelipe/luizalabs-challenge/router"
 )
 
-func TestProductCreate(t *testing.T) {
+func TestHandlerProductCreate(t *testing.T) {
 	var logger = log.New(&bytes.Buffer{}, "", log.LstdFlags|log.Lshortfile)
 
 	tests := []struct {
@@ -24,6 +24,7 @@ func TestProductCreate(t *testing.T) {
 		setupMock          func() *service.MockService
 		requestBody        string
 		expectedStatusCode int
+		authorization      bool
 	}{
 		{
 			description: "simple test",
@@ -40,6 +41,7 @@ func TestProductCreate(t *testing.T) {
 				"price": 100.00,
 				"review_score": 4.5
 			}`,
+			authorization:      true,
 			expectedStatusCode: 201,
 		},
 		{
@@ -50,6 +52,7 @@ func TestProductCreate(t *testing.T) {
 				service.EXPECT().Add(gomock.Any()).Return(errors.New("")).AnyTimes()
 				return service
 			},
+			authorization:      true,
 			expectedStatusCode: 400,
 		},
 		{
@@ -67,7 +70,16 @@ func TestProductCreate(t *testing.T) {
 				"price": 100.00,
 				"review_score": 4.5
 			}`,
+			authorization:      true,
 			expectedStatusCode: 500,
+		},
+		{
+			description: "error not authorization",
+			setupMock: func() *service.MockService {
+				return nil
+			},
+			authorization:      false,
+			expectedStatusCode: 403,
 		},
 	}
 
@@ -86,6 +98,9 @@ func TestProductCreate(t *testing.T) {
 			}
 
 			ctx := router.Context{
+				Authorization: router.Authorization{
+					Write: test.authorization,
+				},
 				ResponseWriter: w,
 				Request:        req,
 			}
@@ -100,7 +115,7 @@ func TestProductCreate(t *testing.T) {
 	}
 }
 
-func TestProductUpdate(t *testing.T) {
+func TestHandlerProductUpdate(t *testing.T) {
 	var logger = log.New(&bytes.Buffer{}, "", log.LstdFlags|log.Lshortfile)
 
 	tests := []struct {
@@ -109,6 +124,7 @@ func TestProductUpdate(t *testing.T) {
 		requestID          string
 		requestBody        string
 		expectedStatusCode int
+		authorization      bool
 	}{
 		{
 			description: "Simple test",
@@ -124,6 +140,7 @@ func TestProductUpdate(t *testing.T) {
 				"price": 150.00,
 				"review_score": 4.5
 			}`,
+			authorization:      true,
 			expectedStatusCode: 200,
 		},
 		{
@@ -140,6 +157,7 @@ func TestProductUpdate(t *testing.T) {
 				"price": 150.00,
 				"review_score": 4.5
 			}`,
+			authorization:      true,
 			expectedStatusCode: 500,
 		},
 		{
@@ -150,6 +168,7 @@ func TestProductUpdate(t *testing.T) {
 				service.EXPECT().Update(gomock.Any()).Return(errors.New("")).AnyTimes()
 				return service
 			},
+			authorization:      true,
 			expectedStatusCode: 400,
 		},
 		{
@@ -166,7 +185,16 @@ func TestProductUpdate(t *testing.T) {
 				"price": 150.00,
 				"review_score": 4.5
 			}`,
+			authorization:      true,
 			expectedStatusCode: 400,
+		},
+		{
+			description: "error not authorization",
+			setupMock: func() *service.MockService {
+				return nil
+			},
+			authorization:      false,
+			expectedStatusCode: 403,
 		},
 	}
 
@@ -185,6 +213,9 @@ func TestProductUpdate(t *testing.T) {
 			}
 
 			ctx := router.Context{
+				Authorization: router.Authorization{
+					Write: test.authorization,
+				},
 				ResponseWriter: w,
 				Params:         map[string]string{"id": test.requestID},
 				Request:        req,
@@ -200,7 +231,7 @@ func TestProductUpdate(t *testing.T) {
 	}
 }
 
-func TestProductRemove(t *testing.T) {
+func TestHandlerProductRemove(t *testing.T) {
 	var logger = log.New(&bytes.Buffer{}, "", log.LstdFlags|log.Lshortfile)
 
 	tests := []struct {
@@ -208,6 +239,7 @@ func TestProductRemove(t *testing.T) {
 		setupMock          func(string) *service.MockService
 		requestID          string
 		expectedStatusCode int
+		authorization      bool
 	}{
 		{
 			description: "simple test",
@@ -218,6 +250,7 @@ func TestProductRemove(t *testing.T) {
 				service.EXPECT().RemoveByID(id).Return(nil).AnyTimes()
 				return service
 			},
+			authorization:      true,
 			expectedStatusCode: 200,
 		},
 		{
@@ -229,7 +262,16 @@ func TestProductRemove(t *testing.T) {
 				service.EXPECT().RemoveByID(id).Return(errors.New("")).AnyTimes()
 				return service
 			},
+			authorization:      true,
 			expectedStatusCode: 400,
+		},
+		{
+			description: "error not authorization",
+			setupMock: func(id string) *service.MockService {
+				return nil
+			},
+			authorization:      false,
+			expectedStatusCode: 403,
 		},
 	}
 
@@ -246,6 +288,9 @@ func TestProductRemove(t *testing.T) {
 			}
 
 			ctx := router.Context{
+				Authorization: router.Authorization{
+					Write: test.authorization,
+				},
 				ResponseWriter: w,
 				Params:         map[string]string{"id": test.requestID},
 			}
@@ -260,7 +305,7 @@ func TestProductRemove(t *testing.T) {
 	}
 }
 
-func TestProductList(t *testing.T) {
+func TestHandlerProductList(t *testing.T) {
 	var logger = log.New(os.Stdout, "", log.Lshortfile)
 
 	tests := []struct {
@@ -268,6 +313,7 @@ func TestProductList(t *testing.T) {
 		requestPage        int
 		setupMock          func(int) *service.MockService
 		expectedStatusCode int
+		authorization      bool
 	}{
 		{
 			description: "simple test",
@@ -278,6 +324,7 @@ func TestProductList(t *testing.T) {
 				service.EXPECT().ListByPage(page-1).Return([]domain.Product{}, nil).AnyTimes()
 				return service
 			},
+			authorization:      true,
 			expectedStatusCode: 200,
 		},
 		{
@@ -286,6 +333,7 @@ func TestProductList(t *testing.T) {
 			setupMock: func(id int) *service.MockService {
 				return &service.MockService{}
 			},
+			authorization:      true,
 			expectedStatusCode: 400,
 		},
 		{
@@ -297,7 +345,17 @@ func TestProductList(t *testing.T) {
 				service.EXPECT().ListByPage(page-1).Return([]domain.Product{}, errors.New("")).AnyTimes()
 				return service
 			},
+			authorization:      true,
 			expectedStatusCode: 500,
+		},
+		{
+			description: "error not authorization",
+			requestPage: 1,
+			setupMock: func(page int) *service.MockService {
+				return nil
+			},
+			authorization:      false,
+			expectedStatusCode: 403,
 		},
 	}
 
@@ -314,6 +372,9 @@ func TestProductList(t *testing.T) {
 			}
 
 			ctx := router.Context{
+				Authorization: router.Authorization{
+					Read: test.authorization,
+				},
 				ResponseWriter: w,
 				QueryString: url.Values{
 					"page": []string{strconv.Itoa(test.requestPage)},
@@ -330,7 +391,7 @@ func TestProductList(t *testing.T) {
 	}
 }
 
-func TestDetail(t *testing.T) {
+func TestHandlerProductDetail(t *testing.T) {
 	var logger = log.New(&bytes.Buffer{}, "", log.Lshortfile)
 
 	tests := []struct {
@@ -338,6 +399,7 @@ func TestDetail(t *testing.T) {
 		requestID          string
 		setupMock          func(string) *service.MockService
 		expectedStatusCode int
+		authorization      bool
 	}{
 		{
 			description: "simple test",
@@ -348,6 +410,7 @@ func TestDetail(t *testing.T) {
 				service.EXPECT().FindByID(id).Return(domain.Product{}, nil).AnyTimes()
 				return service
 			},
+			authorization:      true,
 			expectedStatusCode: 200,
 		},
 
@@ -357,6 +420,7 @@ func TestDetail(t *testing.T) {
 			setupMock: func(id string) *service.MockService {
 				return &service.MockService{}
 			},
+			authorization:      true,
 			expectedStatusCode: 400,
 		},
 
@@ -369,7 +433,17 @@ func TestDetail(t *testing.T) {
 				service.EXPECT().FindByID(id).Return(domain.Product{}, errors.New("")).AnyTimes()
 				return service
 			},
+			authorization:      true,
 			expectedStatusCode: 500,
+		},
+
+		{
+			description: "error not authorization",
+			setupMock: func(id string) *service.MockService {
+				return nil
+			},
+			authorization:      false,
+			expectedStatusCode: 403,
 		},
 	}
 
@@ -386,6 +460,9 @@ func TestDetail(t *testing.T) {
 			}
 
 			ctx := router.Context{
+				Authorization: router.Authorization{
+					Read: test.authorization,
+				},
 				ResponseWriter: w,
 				Params: map[string]string{
 					"id": test.requestID,

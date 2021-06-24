@@ -11,6 +11,7 @@ import (
 	"github.com/paraizofelipe/luizalabs-challenge/product/domain"
 	"github.com/paraizofelipe/luizalabs-challenge/product/service"
 	"github.com/paraizofelipe/luizalabs-challenge/router"
+	"github.com/paraizofelipe/luizalabs-challenge/router/middleware"
 )
 
 type Product struct {
@@ -30,6 +31,11 @@ func (h Product) create(ctx *router.Context) {
 		err     error
 		product domain.Product
 	)
+
+	if !ctx.Authorization.Write {
+		ctx.Text(http.StatusForbidden, "Not authorization!")
+		return
+	}
 
 	if err = json.NewDecoder(ctx.Body).Decode(&product); err != nil {
 		h.Logger.Println(err)
@@ -52,6 +58,11 @@ func (h Product) update(ctx *router.Context) {
 		id      string = ctx.Params["id"]
 		product domain.Product
 	)
+
+	if !ctx.Authorization.Write {
+		ctx.Text(http.StatusForbidden, "Not authorization!")
+		return
+	}
 
 	if err = json.NewDecoder(ctx.Body).Decode(&product); err != nil {
 		h.Logger.Println(err)
@@ -78,6 +89,11 @@ func (h Product) remove(ctx *router.Context) {
 		id  string = ctx.Params["id"]
 	)
 
+	if !ctx.Authorization.Write {
+		ctx.Text(http.StatusForbidden, "Not authorization!")
+		return
+	}
+
 	if _, err = uuid.Parse(id); err != nil {
 		h.Logger.Println(err)
 		ctx.Text(http.StatusBadRequest, "Invalid ID!")
@@ -98,6 +114,11 @@ func (h Product) list(ctx *router.Context) {
 		page         int
 		listProducts []domain.Product
 	)
+
+	if !ctx.Authorization.Read {
+		ctx.Text(http.StatusForbidden, "Not authorization!")
+		return
+	}
 
 	if page, err = strconv.Atoi(ctx.QueryString.Get("page")); err != nil || page <= 0 {
 		ctx.Text(http.StatusBadRequest, "Invalid page value")
@@ -120,6 +141,11 @@ func (h Product) detail(ctx *router.Context) {
 		product domain.Product
 	)
 
+	if !ctx.Authorization.Read {
+		ctx.Text(http.StatusForbidden, "Not authorization!")
+		return
+	}
+
 	if _, err = uuid.Parse(id); err != nil {
 		h.Logger.Println(err)
 		ctx.Text(http.StatusBadRequest, "Invalid ID!")
@@ -136,11 +162,11 @@ func (h Product) detail(ctx *router.Context) {
 func (h Product) Router(w http.ResponseWriter, r *http.Request) {
 	router := router.NewRouter(h.Logger)
 
-	router.AddRoute(`product/(?P<id>[\w|-]+)/?`, http.MethodGet, h.detail)
-	router.AddRoute(`product/(?P<id>[\w|-]+)/?`, http.MethodDelete, h.remove)
-	router.AddRoute(`product/(?P<id>[\w|-]+)/?`, http.MethodPatch, h.update)
-	router.AddRoute(`product/?`, http.MethodGet, h.list)
-	router.AddRoute(`product/?`, http.MethodPost, h.create)
+	router.AddRoute(`product/(?P<id>[\w|-]+)/?`, http.MethodGet, h.detail, middleware.BasicAuth)
+	router.AddRoute(`product/(?P<id>[\w|-]+)/?`, http.MethodDelete, h.remove, middleware.BasicAuth)
+	router.AddRoute(`product/(?P<id>[\w|-]+)/?`, http.MethodPatch, h.update, middleware.BasicAuth)
+	router.AddRoute(`product/?`, http.MethodGet, h.list, middleware.BasicAuth)
+	router.AddRoute(`product/?`, http.MethodPost, h.create, middleware.BasicAuth)
 
 	router.ServeHTTP(w, r)
 }
