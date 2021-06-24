@@ -11,10 +11,18 @@ import (
 
 type Handler func(*Context)
 
+type Middleware func(Handler, *Context)
+
+type Authorization struct {
+	Read  bool `json:"read"`
+	Write bool `json:"write"`
+}
+
 type Route struct {
 	Pattern       *regexp.Regexp
 	Method        string
 	ActionHandler Handler
+	Middlewares   []Middleware
 }
 
 type Router struct {
@@ -38,11 +46,14 @@ func NewRouter(logger *log.Logger) *Router {
 	}
 }
 
-// AddRoute ---
-func (r *Router) AddRoute(pattern string, method string, handler Handler) {
+func (r *Router) AddRoute(pattern string, method string, handler Handler, middlewares ...Middleware) {
 	re := regexp.MustCompile(pattern)
-	route := Route{Pattern: re, Method: method, ActionHandler: handler}
-
+	route := Route{
+		Pattern:       re,
+		Method:        method,
+		ActionHandler: handler,
+		Middlewares:   middlewares,
+	}
 	r.Routes = append(r.Routes, route)
 }
 
@@ -57,7 +68,6 @@ func ParsePathParams(matches []string, re *regexp.Regexp) (params map[string]str
 	return
 }
 
-// ServerHTTP ---
 func (r *Router) ServeHTTP(w http.ResponseWriter, resp *http.Request) {
 	ctx := &Context{Request: resp, ResponseWriter: w}
 
@@ -70,7 +80,14 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, resp *http.Request) {
 			if r.debug {
 				r.trace(resp)
 			}
-			rt.ActionHandler(ctx)
+			if len(rt.Middlewares) == 0 {
+				rt.ActionHandler(ctx)
+				return
+			}
+
+			for _, m := range rt.Middlewares {
+				m(rt.ActionHandler, ctx)
+			}
 			return
 		}
 	}
@@ -78,7 +95,6 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, resp *http.Request) {
 	r.DefaultRoute(ctx)
 }
 
-// trace ---
 func (r *Router) trace(req *http.Request) {
 	debugLine := fmt.Sprintf("%v %v %v", req.RemoteAddr, req.Method, req.URL.Path)
 	r.logger.Println(debugLine)

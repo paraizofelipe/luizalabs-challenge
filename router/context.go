@@ -10,8 +10,9 @@ import (
 type Context struct {
 	http.ResponseWriter
 	*http.Request
-	QueryString url.Values
-	Params      map[string]string
+	Authorization Authorization
+	QueryString   url.Values
+	Params        map[string]string
 }
 
 func (c *Context) Text(code int, body string) {
