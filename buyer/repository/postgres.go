@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	"github.com/paraizofelipe/luizalabs-challenge/buyer/domain"
+	productDomain "github.com/paraizofelipe/luizalabs-challenge/product/domain"
 	"github.com/paraizofelipe/luizalabs-challenge/storage"
 )
 
@@ -18,6 +19,53 @@ func NewPostgreRepository(db *sqlx.DB) BuyerRepository {
 	return &repository{
 		storage: storage.NewPostgres(db),
 	}
+}
+
+func (r repository) AddFavoriteProduct(buyerID string, productID string) (err error) {
+	statement := `
+			INSERT INTO product_to_buyer (
+				buyer_id,
+				product_id,
+				created_at,
+				updated_at
+			) VALUES (
+				$1,
+				$2,
+				$3,
+				$4
+			);
+	`
+	err = r.storage.Exec(statement,
+		buyerID,
+		productID,
+		time.Now().UTC(),
+		time.Now().UTC(),
+	)
+	return
+}
+
+func (r repository) FindFavoriteProduct(buyerID string) (listProduct []productDomain.Product, err error) {
+	statement := `
+		SELECT p.id,
+			p.title, 
+			p.brand,
+			p.price,
+			p.image,
+			p.review_score,
+			p.created_at,
+			p.updated_at
+			FROM  product_to_buyer as pd
+		INNER JOIN buyers as b 
+			ON b.id = pd.buyer_id
+		INNER JOIN products as p
+			ON p.id = pd.product_id
+		WHERE b.id = $1;
+	`
+	err = r.storage.FindAll(statement, &listProduct, buyerID)
+	if err == sql.ErrNoRows {
+		err = nil
+	}
+	return
 }
 
 func (r repository) FindAll() (listBuyer []domain.Buyer, err error) {
@@ -95,29 +143,6 @@ func (r repository) Add(buyer domain.Buyer) (err error) {
 		uuid.New(),
 		buyer.Name,
 		buyer.Email,
-		time.Now().UTC(),
-		time.Now().UTC(),
-	)
-	return
-}
-
-func (r repository) AddFavoriteProduct(id string, productID string) (err error) {
-	statement := `
-			INSERT INTO product_to_buyer (
-				buyer_id
-				product_id,
-				created_at,
-				updated_at
-			) VALUES (
-				$1,
-				$2,
-				$3,
-				$4
-			);
-	`
-	err = r.storage.Exec(statement,
-		id,
-		productID,
 		time.Now().UTC(),
 		time.Now().UTC(),
 	)

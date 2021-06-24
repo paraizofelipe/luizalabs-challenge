@@ -17,8 +17,8 @@ type Buyer struct {
 	Service service.Service
 }
 
-func NewHandler(db *sqlx.DB, logger *log.Logger) Buyer {
-	return Buyer{
+func NewHandler(db *sqlx.DB, logger *log.Logger) Handler {
+	return &Buyer{
 		Logger:  logger,
 		Service: service.NewService(db),
 	}
@@ -74,7 +74,7 @@ func (h Buyer) update(ctx *router.Context) {
 	}
 	if buyer.ID, err = uuid.Parse(id); err != nil {
 		h.Logger.Println(err)
-		ctx.Text(http.StatusInternalServerError, "Invalid ID!")
+		ctx.Text(http.StatusBadRequest, "Invalid ID!")
 		return
 	}
 	if err = h.Service.Update(buyer); err != nil {
@@ -88,9 +88,9 @@ func (h Buyer) update(ctx *router.Context) {
 
 func (h Buyer) detail(ctx *router.Context) {
 	var (
-		err     error
-		id      string = ctx.Params["id"]
-		product domain.Buyer
+		err   error
+		id    string = ctx.Params["id"]
+		buyer domain.Buyer
 	)
 
 	if _, err = uuid.Parse(id); err != nil {
@@ -98,12 +98,12 @@ func (h Buyer) detail(ctx *router.Context) {
 		ctx.Text(http.StatusInternalServerError, "Invalid ID!")
 		return
 	}
-	if product, err = h.Service.FindByID(id); err != nil {
+	if buyer, err = h.Service.FindByID(id); err != nil {
 		ctx.Text(http.StatusInternalServerError, "Error when fetching the buyer!")
 		return
 	}
 
-	ctx.JSON(http.StatusOK, product)
+	ctx.JSON(http.StatusOK, buyer)
 }
 
 func (h Buyer) addFavoriteProduct(ctx *router.Context) {
@@ -115,7 +115,7 @@ func (h Buyer) addFavoriteProduct(ctx *router.Context) {
 
 	if _, err = uuid.Parse(id); err != nil {
 		h.Logger.Println(err)
-		ctx.Text(http.StatusInternalServerError, "Invalid ID!")
+		ctx.Text(http.StatusInternalServerError, "Invalid ID of buyer!")
 		return
 	}
 	if _, err = uuid.Parse(productID); err != nil {

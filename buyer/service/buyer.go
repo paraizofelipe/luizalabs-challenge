@@ -4,6 +4,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/paraizofelipe/luizalabs-challenge/buyer/domain"
 	"github.com/paraizofelipe/luizalabs-challenge/buyer/repository"
+	productDomain "github.com/paraizofelipe/luizalabs-challenge/product/domain"
 )
 
 type BuyerService struct {
@@ -15,6 +16,9 @@ func NewService(db *sqlx.DB) Service {
 		repository: repository.NewPostgreRepository(db),
 	}
 }
+func (s BuyerService) FindFavoriteProduct(buyerID string) (listProduct []productDomain.Product, err error) {
+	return s.repository.FindFavoriteProduct(buyerID)
+}
 
 func (s BuyerService) FindAll() (listBuyer []domain.Buyer, err error) {
 	return s.repository.FindAll()
@@ -25,15 +29,22 @@ func (s BuyerService) FindByEmail(email string) (buyer domain.Buyer, err error) 
 }
 
 func (s BuyerService) FindByID(id string) (buyer domain.Buyer, err error) {
-	return s.repository.FindByID(id)
+	if buyer, err = s.repository.FindByID(id); err != nil {
+		return
+	}
+	if buyer.FavoriteProducts, err = s.FindFavoriteProduct(id); err != nil {
+		return
+	}
+
+	return
 }
 
 func (s BuyerService) Add(buyer domain.Buyer) (err error) {
 	return s.repository.Add(buyer)
 }
 
-func (s BuyerService) AddFavoriteProduct(id string, productID string) (err error) {
-	return s.repository.AddFavoriteProduct(id, productID)
+func (s BuyerService) AddFavoriteProduct(buyerID string, productID string) (err error) {
+	return s.repository.AddFavoriteProduct(buyerID, productID)
 }
 
 func (s BuyerService) Update(buyer domain.Buyer) (err error) {

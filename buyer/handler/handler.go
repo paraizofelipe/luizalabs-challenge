@@ -2,10 +2,18 @@ package handler
 
 import (
 	"encoding/json"
+	"net/http"
+
+	"github.com/paraizofelipe/luizalabs-challenge/router"
 )
 
-type Handler struct {
-	Buyer Buyer
+type Handler interface {
+	create(*router.Context)
+	remove(*router.Context)
+	update(*router.Context)
+	detail(*router.Context)
+	addFavoriteProduct(*router.Context)
+	Router(http.ResponseWriter, *http.Request)
 }
 
 type ErrorResponse struct {
