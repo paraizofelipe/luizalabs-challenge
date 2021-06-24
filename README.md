@@ -10,6 +10,16 @@ These instructions will provide you a copy of the project that can be run on you
 
 This package was created with go1.16 and all you need is the standard go library.
 
+# Variables
+
+To make the application easier to run, the project has a `.env` file to declare the environment variables
+
+- **HOST** - Host address the application will use
+- **PORT** - Port number where the application will listen to http requests
+- **DEBUG** - Variable to define whether an API will produce logs for stdout
+- **SECRET** - Secret word using to decode JWT
+- **STORAGE** - Database address
+
 # Installing
 
 This is what you need to install the application from the source code:
@@ -38,8 +48,9 @@ You can run tests like this:
 
 To run this code locally for test purposes use:
 
+Example:
 ```bash
-    make dk-start
+    STORAGE=postgres://luiza:labs@localhost:5432/luizalabs?sslmode=disable DEBUG=true HOST=0.0.0.0 SECRET=magalu PORT=3000 make start
 ```
 
 # Deployment
@@ -56,6 +67,27 @@ Deploy with docker:
 
 # API
 
+## Authorization
+
+The API uses basic authentication with permissions based on read and write. To make testing easier, you can use the following tokens in the request header.
+**Note**: These tokes only work with the environment variable `SECRET` set to magalu.
+
+### Read
+
+`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFkIjp0cnVlLCJ3cml0ZSI6ZmFsc2UsImlzcyI6InRlc3QifQ.h1Dxo7xRffGyaF_Ee8qaWoCGrK-fJxqidr2lpZAydB0`
+
+### Write
+
+`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFkIjpmYWxzZSwid3JpdGUiOnRydWUsImlzcyI6InRlc3QifQ.gm3iLFB66n11WaLrWwqD24a28cMLwcruj3TNB8FSrZ0`
+
+### Read and Write
+
+`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFkIjp0cnVlLCJ3cml0ZSI6dHJ1ZSwiaXNzIjoidGVzdCJ9.GYcqB4JeGR32cuD4H2lOgRDO8MS0YPJo3DA9gIZiygM`
+
+### No reading and writing
+
+`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyZWFkIjpmYWxzZSwid3JpdGUiOmZhbHNlLCJpc3MiOiJ0ZXN0In0.N_OC0cfd4HShueBZjGiNkUcIxWZgHWhCzd-CTmYvacU`
+
 ## Resources
 
 ### product
@@ -65,7 +97,7 @@ Deploy with docker:
 Add a product
 
 ```bash
-    curl -i -X POST "http://localhost:300/api/product/" \
+    curl -i -X POST "http://localhost:3000/api/product/" \
     -H "Content-Type: application/json" \
     -d '{"title": "Smart TV xpto", "brand": "Paraizo", "price": 100.50, "review_score": 4.5, "image": "http://brand.com/image.png" }' 
 ```
@@ -75,7 +107,7 @@ Add a product
 Fetch a product by ID
 
 ```bash
-    curl -i -X GET "http://localhost:300/api/product/925fa490-7fa5-4fee-8035-3b691af02cb8" 
+    curl -i -X GET "http://localhost:3000/api/product/925fa490-7fa5-4fee-8035-3b691af02cb8" 
 ```
 
 - **GET** /api/product/?page=**\<page number\>**
@@ -83,7 +115,7 @@ Fetch a product by ID
 List a page of products
 
 ```bash
-    curl -i -X GET "http://localhost:300/api/product/?page=10" 
+    curl -i -X GET "http://localhost:3000/api/product/?page=10" 
 ```
 
 - **PATCH** /api/product/**\<id\>**
@@ -91,7 +123,7 @@ List a page of products
 Updates product's information
 
 ```bash
-    curl -i -X PATCH "http://localhost:300/api/product/925fa490-7fa5-4fee-8035-3b691af02cb8" \
+    curl -i -X PATCH "http://localhost:3000/api/product/925fa490-7fa5-4fee-8035-3b691af02cb8" \
     -H "Content-Type: application/json" \
     -d '{"title": "Smart TV xpto", "brand": "Hell", "price": 100.50, "review_score": 4.5, "image": "http://brand.com/image.png" }' 
 ```
@@ -111,14 +143,15 @@ Remove a product of database
 Create a buyer
 
 ```bash
-    curl -i -X POST "http://localhost:300/api/buyer/" \
+    curl -i -X POST "http://localhost:3000/api/buyer/" \
+    -H "Authorization: " \
     -H "Content-Type: application/json" \
     -d '{"title": "Smart TV xpto", "brand": "Paraizo", "price": 100.50, "review_score": 4.5, "image": "http://brand.com/image.png" }' 
 ```
 Add favorite product to buyer
 
 ```bash
-    curl -i -X POST "http://localhost:300/api/buyer/925fa490-7fa5-4fee-8035-3b691af02cb8/product/f4cacf02-4e71-42ad-9fd8-ace6d27a4c87"
+    curl -i -X POST "http://localhost:3000/api/buyer/925fa490-7fa5-4fee-8035-3b691af02cb8/product/f4cacf02-4e71-42ad-9fd8-ace6d27a4c87"
 ```
 
 - **GET** /api/buyer/**\<id\>**
@@ -126,7 +159,7 @@ Add favorite product to buyer
 Fetch a buyer by id
 
 ```bash
-    curl -i -X GET "http://localhost:300/api/buyer/925fa490-7fa5-4fee-8035-3b691af02cb8" 
+    curl -i -X GET "http://localhost:3000/api/buyer/925fa490-7fa5-4fee-8035-3b691af02cb8" 
 ```
 
 - **PATCH** /api/buyer/**\<id\>**
@@ -134,7 +167,7 @@ Fetch a buyer by id
 Updates buyer's information
 
 ```bash
-    curl -i -X PATCH "http://localhost:300/api/buyer/925fa490-7fa5-4fee-8035-3b691af02cb8" \
+    curl -i -X PATCH "http://localhost:3000/api/buyer/925fa490-7fa5-4fee-8035-3b691af02cb8" \
     -H "Content-Type: application/json" \
     -d '{"title": "Smart TV xpto", "brand": "Hell", "price": 100.50, "review_score": 4.5, "image": "http://brand.com/image.png" }' 
 ```
@@ -144,5 +177,5 @@ Updates buyer's information
 Remove buyer of database
 
 ```bash
-    curl -i -X DELETE "http://localhost:300/api/buyer/925fa490-7fa5-4fee-8035-3b691af02cb8" 
+    curl -i -X DELETE "http://localhost:3000/api/buyer/925fa490-7fa5-4fee-8035-3b691af02cb8" 
 ```
