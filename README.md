@@ -98,6 +98,7 @@ Add a product
 
 ```bash
     curl -i -X POST "http://localhost:3000/api/product/" \
+    -H "Authorization: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
     -H "Content-Type: application/json" \
     -d '{"title": "Smart TV xpto", "brand": "Paraizo", "price": 100.50, "review_score": 4.5, "image": "http://brand.com/image.png" }' 
 ```
@@ -107,7 +108,8 @@ Add a product
 Fetch a product by ID
 
 ```bash
-    curl -i -X GET "http://localhost:3000/api/product/925fa490-7fa5-4fee-8035-3b691af02cb8" 
+    curl -i -X GET "http://localhost:3000/api/product/925fa490-7fa5-4fee-8035-3b691af02cb8" \
+    -H "Authorization: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 ```
 
 - **GET** /api/product/?page=**\<page number\>**
@@ -115,7 +117,8 @@ Fetch a product by ID
 List a page of products
 
 ```bash
-    curl -i -X GET "http://localhost:3000/api/product/?page=10" 
+    curl -i -X GET "http://localhost:3000/api/product/?page=10" \
+    -H "Authorization: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 ```
 
 - **PATCH** /api/product/**\<id\>**
@@ -124,6 +127,7 @@ Updates product's information
 
 ```bash
     curl -i -X PATCH "http://localhost:3000/api/product/925fa490-7fa5-4fee-8035-3b691af02cb8" \
+    -H "Authorization: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
     -H "Content-Type: application/json" \
     -d '{"title": "Smart TV xpto", "brand": "Hell", "price": 100.50, "review_score": 4.5, "image": "http://brand.com/image.png" }' 
 ```
@@ -133,7 +137,8 @@ Updates product's information
 Remove a product of database
 
 ```bash
-    curl -i -X DELETE "http://localhost:300/api/product/925fa490-7fa5-4fee-8035-3b691af02cb8" 
+    curl -i -X DELETE "http://localhost:300/api/product/925fa490-7fa5-4fee-8035-3b691af02cb8" \
+    -H "Authorization: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" 
 ```
 
 ### buyer
@@ -144,14 +149,15 @@ Create a buyer
 
 ```bash
     curl -i -X POST "http://localhost:3000/api/buyer/" \
-    -H "Authorization: " \
+    -H "Authorization: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
     -H "Content-Type: application/json" \
     -d '{"title": "Smart TV xpto", "brand": "Paraizo", "price": 100.50, "review_score": 4.5, "image": "http://brand.com/image.png" }' 
 ```
 Add favorite product to buyer
 
 ```bash
-    curl -i -X POST "http://localhost:3000/api/buyer/925fa490-7fa5-4fee-8035-3b691af02cb8/product/f4cacf02-4e71-42ad-9fd8-ace6d27a4c87"
+    curl -i -X POST "http://localhost:3000/api/buyer/925fa490-7fa5-4fee-8035-3b691af02cb8/product/f4cacf02-4e71-42ad-9fd8-ace6d27a4c87" \
+    -H "Authorization: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 ```
 
 - **GET** /api/buyer/**\<id\>**
@@ -159,7 +165,8 @@ Add favorite product to buyer
 Fetch a buyer by id
 
 ```bash
-    curl -i -X GET "http://localhost:3000/api/buyer/925fa490-7fa5-4fee-8035-3b691af02cb8" 
+    curl -i -X GET "http://localhost:3000/api/buyer/925fa490-7fa5-4fee-8035-3b691af02cb8" \
+    -H "Authorization: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 ```
 
 - **PATCH** /api/buyer/**\<id\>**
@@ -168,6 +175,7 @@ Updates buyer's information
 
 ```bash
     curl -i -X PATCH "http://localhost:3000/api/buyer/925fa490-7fa5-4fee-8035-3b691af02cb8" \
+    -H "Authorization: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" \
     -H "Content-Type: application/json" \
     -d '{"title": "Smart TV xpto", "brand": "Hell", "price": 100.50, "review_score": 4.5, "image": "http://brand.com/image.png" }' 
 ```
@@ -177,5 +185,6 @@ Updates buyer's information
 Remove buyer of database
 
 ```bash
-    curl -i -X DELETE "http://localhost:3000/api/buyer/925fa490-7fa5-4fee-8035-3b691af02cb8" 
+    curl -i -X DELETE "http://localhost:3000/api/buyer/925fa490-7fa5-4fee-8035-3b691af02cb8" \
+    -H "Authorization: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 ```
