@@ -46,7 +46,7 @@ func (r *Router) AddRoute(pattern string, method string, handler Handler) {
 	r.Routes = append(r.Routes, route)
 }
 
-func (r *Router) ParsePathParams(matches []string, re *regexp.Regexp) (params map[string]string) {
+func ParsePathParams(matches []string, re *regexp.Regexp) (params map[string]string) {
 	params = make(map[string]string)
 	for index, key := range re.SubexpNames() {
 		if key == "" {
@@ -63,7 +63,7 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, resp *http.Request) {
 
 	for _, rt := range r.Routes {
 		if matches := rt.Pattern.FindStringSubmatch(ctx.URL.Path); len(matches) > 0 && rt.Method == ctx.Method {
-			ctx.Params = r.ParsePathParams(matches, rt.Pattern)
+			ctx.Params = ParsePathParams(matches, rt.Pattern)
 			if ctx.URL.Query() != nil {
 				ctx.QueryString = ctx.URL.Query()
 			}
