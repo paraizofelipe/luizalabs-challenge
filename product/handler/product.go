@@ -18,7 +18,7 @@ type Product struct {
 	Service service.Service
 }
 
-func NewHandler(db *sqlx.DB, logger *log.Logger) Product {
+func NewHandler(db *sqlx.DB, logger *log.Logger) Handler {
 	return Product{
 		Logger:  logger,
 		Service: service.NewService(db),
@@ -60,7 +60,7 @@ func (h Product) update(ctx *router.Context) {
 	}
 	if product.ID, err = uuid.Parse(id); err != nil {
 		h.Logger.Println(err)
-		ctx.Text(http.StatusInternalServerError, "Invalid ID!")
+		ctx.Text(http.StatusBadRequest, "Invalid ID!")
 		return
 	}
 	if err = h.Service.Update(product); err != nil {
@@ -80,7 +80,7 @@ func (h Product) remove(ctx *router.Context) {
 
 	if _, err = uuid.Parse(id); err != nil {
 		h.Logger.Println(err)
-		ctx.Text(http.StatusInternalServerError, "Invalid ID!")
+		ctx.Text(http.StatusBadRequest, "Invalid ID!")
 		return
 	}
 	if err = h.Service.RemoveByID(id); err != nil {
@@ -100,7 +100,7 @@ func (h Product) list(ctx *router.Context) {
 	)
 
 	if page, err = strconv.Atoi(ctx.QueryString.Get("page")); err != nil || page <= 0 {
-		ctx.Text(http.StatusInternalServerError, "Invalid page value")
+		ctx.Text(http.StatusBadRequest, "Invalid page value")
 		h.Logger.Println(err)
 		return
 	}
@@ -122,7 +122,7 @@ func (h Product) detail(ctx *router.Context) {
 
 	if _, err = uuid.Parse(id); err != nil {
 		h.Logger.Println(err)
-		ctx.Text(http.StatusInternalServerError, "Invalid ID!")
+		ctx.Text(http.StatusBadRequest, "Invalid ID!")
 		return
 	}
 	if product, err = h.Service.FindByID(id); err != nil {

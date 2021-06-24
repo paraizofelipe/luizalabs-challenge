@@ -1,8 +1,6 @@
 package service
 
 import (
-	"errors"
-
 	"github.com/jmoiron/sqlx"
 	"github.com/paraizofelipe/luizalabs-challenge/product/domain"
 	"github.com/paraizofelipe/luizalabs-challenge/product/repository"
@@ -31,16 +29,6 @@ func (s ProdutService) FindByTitleAndBrand(brand string, title string) (product 
 }
 
 func (s ProdutService) Add(product domain.Product) (err error) {
-	var p domain.Product
-
-	if p, err = s.FindByTitleAndBrand(product.Brand, product.Title); err != nil {
-		return
-	}
-	if p.Brand != "" && p.Title != "" {
-		err = errors.New("Product already registered")
-		return
-	}
-
 	return s.repository.Add(product)
 }
 

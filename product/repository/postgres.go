@@ -20,6 +20,27 @@ func NewPostgreRepository(db *sqlx.DB) ProductRepository {
 	}
 }
 
+func (r repository) FindFavoriteProduct(buyerID string) (listProduct []domain.Product, err error) {
+	statement := `
+		SELECT p.title, 
+			p.brand,
+			p.price,
+			p.image,
+			p.review_score
+			FROM  product_to_buyer as pd
+		INNER JOIN buyers as b 
+			ON b.id = pd.buyer_id
+		INNER JOIN products as p
+			ON p.id = pd.product_id
+		WHERE b.email = $1;
+	`
+	err = r.storage.FindAll(statement, &listProduct, buyerID)
+	if err == sql.ErrNoRows {
+		err = nil
+	}
+	return
+}
+
 func (r repository) ListByPage(page int) (listProduct []domain.Product, err error) {
 	statement := `
 			SELECT
