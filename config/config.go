@@ -10,6 +10,7 @@ var (
 	Port    = EnvToInt(os.Getenv("PORT"))
 	Storage = os.Getenv("STORAGE")
 	Debug   = EnvToBool(os.Getenv("DEBUG"))
+	Secret  = os.Getenv("SECRET")
 )
 
 func EnvToBool(env string) bool {
